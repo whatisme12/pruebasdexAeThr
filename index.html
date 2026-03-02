@@ -1,191 +1,150 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
 <meta charset="UTF-8">
+<title>XAERTH TRANSLATOR</title>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Traductor Xaerth</title>
-
 <style>
-
-/* ===== ESTILO GENERAL ===== */
 body{
+background:black;
+color:lime;
+font-family:monospace;
+text-align:center;
 margin:0;
-font-family:Arial;
-color:white;
-background:#000;
-overflow:hidden;
 }
 
-/* ===== FONDO NUBES PIXEL ===== */
-.clouds{
-position:fixed;
-width:200%;
-height:100%;
-background:
-radial-gradient(circle,#fff 10px,transparent 11px),
-radial-gradient(circle,#fff 15px,transparent 16px);
-background-size:120px 120px;
-animation:mover 40s linear infinite;
-opacity:0.2;
-}
-
-@keyframes mover{
-from{transform:translateX(0);}
-to{transform:translateX(-50%);}
-}
-
-/* ===== LOGIN ===== */
-#login{
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-height:100vh;
-text-align:center;
-}
-
-input{
-padding:10px;
-font-size:18px;
-border:none;
-border-radius:8px;
-margin-top:10px;
-}
-
-button{
-margin-top:15px;
-padding:10px 20px;
-font-size:18px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-}
-
-/* ===== TRADUCTOR ===== */
-#traductor{
-display:none;
-padding:20px;
-text-align:center;
-}
+h1{margin-top:20px;}
 
 textarea{
 width:90%;
-height:120px;
-margin:10px;
-border-radius:10px;
+height:140px;
+background:black;
+color:lime;
+border:2px solid lime;
+font-size:18px;
 padding:10px;
+}
+
+button{
+margin:10px;
+padding:10px 15px;
 font-size:16px;
+background:black;
+color:lime;
+border:2px solid lime;
+cursor:pointer;
 }
 
-select{
-position:absolute;
-top:10px;
-right:10px;
-padding:8px;
-border-radius:8px;
+button:hover{
+background:lime;
+color:black;
 }
 
-@media(max-width:600px){
-textarea{
-width:95%;
-}
-}
-
+.note{color:red;}
 </style>
 </head>
 
 <body>
 
-<div class="clouds"></div>
+<h1>XAERTH SYSTEM</h1>
 
-<!-- LOGIN -->
-<div id="login">
-<h1>BIENVENIDO A TRADUCTOR XAERTH</h1>
-<p>Ingrese contraseña</p>
+<p class="note">
+Este traductor es nuevo, y todavía estamos trabajando para mejorarlo.
+</p>
 
-<input type="password" id="clave" placeholder="Contraseña">
-<button onclick="entrar()">Entrar</button>
-
-<p id="error"></p>
-</div>
-
-<!-- TRADUCTOR -->
-<div id="traductor">
-
-<select id="modo">
-<option value="es_x">Español → Xaerth</option>
-<option value="x_es">Xaerth → Español</option>
-</select>
-
-<h2>Traductor Xaerth</h2>
-
-<textarea id="entrada" placeholder="Escribe aquí..."></textarea>
-
+<textarea id="input" placeholder="Escribe aquí..."></textarea>
 <br>
 
-<button onclick="traducir()">Traducir</button>
+<button onclick="aXaerth()">Idioma → XAERTH</button>
+<button onclick="aEspanol()">XAERTH → Idioma</button>
 
-<textarea id="salida" placeholder="Resultado..." readonly></textarea>
-
-</div>
+<p id="output"></p>
 
 <script>
 
-/* ===== PASSWORD ===== */
-function entrar(){
-let clave=document.getElementById("clave").value;
+/* ======================
+   ALFABETO XAERTH
+====================== */
 
-if(clave==="8514"){
-document.getElementById("login").style.display="none";
-document.getElementById("traductor").style.display="block";
-document.body.style.overflow="auto";
-}else{
-document.getElementById("error").innerText="Contraseña incorrecta";
-}
-}
-
-/* ===== IDIOMA XAERTH (NUEVO COMPLEJO) ===== */
-
-const xaerth={
-a:"∆", b:"ß", c:"¢", d:"Ð", e:"Ξ", f:"Ŧ",
-g:"Ǥ", h:"Ħ", i:"Ī", j:"ʝ", k:"Ҡ", l:"Ł",
-m:"₥", n:"И", ñ:"Й", o:"Ø", p:"Þ", q:"Ҩ",
-r:"Я", s:"§", t:"Ŧ", u:"Ʉ", v:"V", w:"₩",
-x:"Ж", y:"¥", z:"Ƶ"
+const abecedario={
+"A":"⟁","B":"⌬","C":"◈","D":"⊘","E":"⌁",
+"F":"⊗","G":"⌖","H":"⧉","I":"∆","J":"⌾",
+"K":"⊙","L":"⌂","M":"◬","N":"⬡","Ñ":"⬢",
+"O":"∅","P":"⟡","Q":"⟠","R":"⌘","S":"⧫",
+"T":"⌭","U":"⊓","V":"⊜","W":"⌯","X":"✧",
+"Y":"⌖⌁","Z":"⊛"
 };
 
-/* inverso */
-const español={};
-for(let letra in xaerth){
-español[xaerth[letra]]=letra;
+/* Crear diccionario inverso */
+const inverso={};
+Object.keys(abecedario).forEach(l=>{
+inverso[abecedario[l]]=l;
+});
+
+/* ======================
+   ESPAÑOL → XAERTH
+====================== */
+
+function aXaerth(){
+
+let texto=document
+.getElementById("input")
+.value
+.toUpperCase();
+
+let resultado=[];
+
+for(let letra of texto){
+
+if(letra===" "){
+resultado.push("   "); // mantiene palabras
+}
+else if(abecedario[letra]){
+resultado.push(abecedario[letra]);
+}
+else{
+resultado.push(letra);
 }
 
-/* ===== TRADUCCIÓN ===== */
+}
 
-function traducir(){
+document.getElementById("output").innerText=
+resultado.join(" ");
+}
 
-let texto=document.getElementById("entrada").value.toLowerCase();
-let modo=document.getElementById("modo").value;
+/* ======================
+   XAERTH → ESPAÑOL
+====================== */
+
+function aEspanol(){
+
+let texto=document
+.getElementById("input")
+.value
+.trim();
+
+let simbolos=texto.split(/\s+/);
 
 let resultado="";
 
-if(modo==="es_x"){
+simbolos.forEach(s=>{
 
-for(let char of texto){
-resultado+=xaerth[char] || char;
+if(inverso[s]){
+resultado+=inverso[s];
+}
+else if(s===""){
+resultado+=" ";
+}
+else{
+resultado+=s;
 }
 
-}else{
+});
 
-for(let char of texto){
-resultado+=español[char] || char;
-}
-
-}
-
-document.getElementById("salida").value=resultado;
-
+document.getElementById("output").innerText=
+resultado;
 }
 
 </script>
